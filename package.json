@@ -1,0 +1,33 @@
+{
+  "name": "ti.es6",
+  "version": "1.0.0",
+  "description": "A Titanium plugin to introduce es6 with alloy",
+  "scripts": {
+      "postinstall": "node run install",
+      "preuninstall": "node run uninstall"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheSmiths/ti.es6.git"
+  },
+  "dependencies": {
+    "babel": "^5.8.x"
+  },
+  "keywords": [
+    "es6",
+    "babel",
+    "titanium",
+    "alloy",
+    "promise",
+    "harmony"
+  ],
+  "engines": {
+    "node": ">=0.10"
+  },
+  "author": "The Smiths [Matthias Benkort]",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheSmiths/ti.es6/issues"
+  },
+  "homepage": "https://github.com/TheSmiths/ti.es6#readme"
+}
