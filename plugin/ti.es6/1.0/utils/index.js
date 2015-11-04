@@ -5,29 +5,22 @@ var path = require('path')
  * If an .app folder exists, it will remove the replace the app/ folder by the .app folder
  * and then, remove the .app folder. It assumes that the .app folder is the sources backup
  */
-exports.clean = function clean (original, compiled, next) {
-    fs.stat(original, function (e, stats) {
+exports.clean = function clean (folder, next) {
+    if (arguments.length <= 1) { return exports.cleanSync(folder) }
+    fs.stat(folder, function (e, stats) {
         if (e || !stats.isDirectory()) { return next() }
-        exports.rm(compiled, function (e) {
-            if (e) { return next(e) }
-            exports.cp(original, compiled, function (e) {
-                if (e) { return next(e) }
-                exports.rm(original, next)
-            })
-        })
+        exports.rm(folder, next)
     })
 }
 
-exports.cleanSync = function cleanSync (original, compiled) {
+exports.cleanSync = function cleanSync (folder) {
     try {
-        var stats = fs.statSync(original)
+        var stats = fs.statSync(folder)
         if (!stats.isDirectory()) { throw("Nothing to clean") }
     } catch (e) { return }
 
     try {
-        exports.rmSync(compiled)
-        exports.cpSync(original, compiled)
-        exports.rmSync(original)
+        exports.rmSync(folder)
     } catch (e) {
         return e
     }

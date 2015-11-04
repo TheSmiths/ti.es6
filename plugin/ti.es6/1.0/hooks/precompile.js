@@ -5,8 +5,8 @@ var utils = require('../utils')
 
 /* Needed paths for the plugin */
 var paths = {
-      compiled: undefined,
-      original: undefined
+      project: undefined,
+      sources: undefined
 }
 
 exports.cliVersion = ">=3.x"
@@ -19,6 +19,18 @@ exports.init = function (logger, config, cli) {
     })
     process.on('exit', function () {
         utils.cleanSync(paths.original, paths.compiled)
+    })
+
+    cli.on('command.config', function (data, next) {
+        paths.project = path.join(data.cli.argv['project-dir'], '.project')
+        paths.sources = path.join(data.cli.argv['project-dir'], 'app')
+        paths.sourcesCompiled = path.join(paths.project, 'app')
+        data.cli.argv.$_.push('--project-dir', paths.project)
+        utils.clean(paths.project, function (e) {
+            if (e) { return next(e) }
+            fs.mkdir(paths.project)
+            cp.
+        })
     })
 
     /* Actually declare the hook */
