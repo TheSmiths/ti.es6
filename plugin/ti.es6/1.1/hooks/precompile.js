@@ -5,7 +5,6 @@ var utils = require('../utils')
 
 /* Needed paths for the plugin */
 var paths = {}
-var es6 = false
 var blacklist = ['Resources', 'build', 'README', 'LICENSE']
 
 exports.cliVersion = ">=3.x"
@@ -47,16 +46,21 @@ exports.init = function (logger, config, cli) {
 function executeSeq(logger, tasks) {
     var current = 0
     var errored = false
+    var es6 = null
 
     return function task(data, terminate) {
+        /* No task are done if es6 isn't needed */
+        if (es6 === null && data.cli) {
+            var propES6 = data.cli.tiapp.properties.es6 && data.cli.tiapp.properties.es6.value
+            var optiES6 = data.cli.argv.$_.indexOf('--es6') !== -1
+            es6 = propES6 || optiES6
+        }
+        if (!es6) { return terminate() }
         tasks[current](logger, data, function next(err, type) {
             if (err) {
                 if (errored) { return }
                 errored = true
                 logger[type || 'error'](err)
-                if (type && type !== 'error') {
-                    return terminate()
-                }
                 return terminate(type && type !== 'error' ? undefined : "Unable to use ES6")
             }
             if (++current >= tasks.length) { return terminate() }
@@ -66,17 +70,12 @@ function executeSeq(logger, tasks) {
 }
 
 function copyResources (logger, data, next) {
-    if (!es6) { return next() }
     logger.info("Copying back resources into project folder")
     utils.cp(paths.toResources, paths.fromResources, next)
 }
 
 function prepare(logger, data, next) {
-    var propES6 = data.cli.tiapp.properties.es6 && data.cli.tiapp.properties.es6.value
-    var optiES6 = data.cli.argv.$_.indexOf('--es6') !== -1
-    es6 = propES6 || optiES6;
-    logger.info(es6 ? "Setup project for ES6 transpiling" : "Es6 not desired on this project")
-    if (!es6) { return next() }
+    logger.info("Setup project for ES6 transpiling")
     paths.fromProject = data.cli.argv['project-dir']
     paths.toProject = path.join(paths.fromProject, '.project')
     paths.fromSources = path.join(paths.fromProject, 'app')
@@ -89,9 +88,6 @@ function prepare(logger, data, next) {
 }
 
 function copyProject (logger, data, next) {
-    /* Ensure the user wants to build for es6 */
-    if (!es6) { return next('ES6 not desired for this build.', 'info') }
-
     logger.info("Preparing project for ES6.")
     fs.mkdir(paths.toProject, function (e) {
         if (e) { return next(e) }
