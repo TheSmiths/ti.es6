@@ -66,6 +66,7 @@ function executeSeq(logger, tasks) {
 }
 
 function copyResources (logger, data, next) {
+    if (!es6) { return next() }
     logger.info("Copying back resources into project folder")
     utils.cp(paths.toResources, paths.fromResources, next)
 }
