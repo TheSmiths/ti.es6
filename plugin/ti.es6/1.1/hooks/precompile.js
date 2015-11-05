@@ -23,23 +23,19 @@ exports.init = function (logger, config, cli) {
         prepare
     ]))
 
-    cli.on('build.android.startEmulator', executeSeq(logger, [
-        copyResources
-    ]))
-
-    cli.on('build.ios.copyResource', executeSeq(logger, [
-        copyResources
-    ]))
-
     cli.on('build.pre.compile', executeSeq(logger, [
         copyProject,
         transcompile,
         requirePolyfill,
-        copyPolyfill
+        copyPolyfill,
+        cleanResources,
+        symlinkResources
     ]))
 
     cli.on('build.post.compile', executeSeq(logger, [
-        postCompile
+        cleanResources,
+        copyCompiledResources,
+        cleanProject
     ]))
 }
 
@@ -67,11 +63,6 @@ function executeSeq(logger, tasks) {
             task(data, terminate)
         })
     }
-}
-
-function copyResources (logger, data, next) {
-    logger.info("Copying back resources into project folder")
-    utils.cp(paths.toResources, paths.fromResources, next)
 }
 
 function prepare(logger, data, next) {
@@ -147,7 +138,27 @@ function copyPolyfill (logger, data, next) {
     })
 }
 
-function postCompile (logger, data, next) {
+function cleanResources (logger, data, next) {
+    logger.info("Clean Resources")
+    fs.lstat(paths.fromResources, function (e, stats) {
+        if (!e && stats.isDirectory()) { return utils.clean(paths.fromResources, next) }
+        if (!e && stats.isSymbolicLink()) { return fs.unlink(paths.fromResources, next) }
+        if (e && e.code === 'ENOENT') { return next() }
+        next(e)
+    })
+}
+
+function symlinkResources (logger, data, next) {
+    logger.info("Symlinking resources")
+    fs.symlink(paths.toResources, paths.fromResources, next)
+}
+
+function cleanProject (logger, data, next) {
     logger.info("Cleaning ES6 artifacts")
     utils.clean(paths.toProject, next)
+}
+
+function copyCompiledResources (logger, data, next) {
+    logger.info("Copying compiled resources")
+    utils.cp(paths.toResources, paths.fromResources, next)
 }
