@@ -26,4 +26,5 @@ time:
 
 ### Changelog
 
+- 1.1 Avoid deleting and replacing original sources
 - 1.0 First version
