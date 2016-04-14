@@ -5,7 +5,7 @@ var utils = require('../utils')
 
 /* Needed paths for the plugin */
 var paths = {}
-var blacklist = ['Resources', 'build', 'README', 'LICENSE']
+var blacklist = ['Resources', 'build', 'README', 'LICENSE', 'node_modules']
 
 exports.cliVersion = ">=3.x"
 exports.version = "1.0"
